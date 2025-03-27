@@ -9,6 +9,9 @@ import edu.ijse.mvc.dto.ItemDto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
 
 /**
  *
@@ -48,5 +51,39 @@ public class ItemModel {
         statement.setString(1, itemCode);
         
         return statement.executeUpdate() > 0 ? "Successfully Deleted" : "Fail";
+    }
+    
+    public ItemDto searchItem(String itemCode) throws ClassNotFoundException, SQLException{
+        Connection connection = DBConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM Item WHERE ItemCode = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, itemCode);
+        
+        ResultSet rst = statement.executeQuery();
+        
+        if(rst.next()){
+            ItemDto dto = new ItemDto(rst.getString("ItemCode"), 
+                    rst.getString("Description"), rst.getString("PackSize"),
+                    rst.getDouble("UnitPrice"), rst.getInt("QtyOnHand"));
+            return dto;
+        }
+        return null;
+    }
+    
+    public ArrayList<ItemDto> getAll() throws ClassNotFoundException, SQLException{
+        Connection connection = DBConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM Item";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        
+        ResultSet rst = statement.executeQuery();
+        ArrayList<ItemDto> itemDtos = new ArrayList<>();
+        
+        while (rst.next()) {            
+            ItemDto dto = new ItemDto(rst.getString("ItemCode"), 
+                    rst.getString("Description"), rst.getString("PackSize"),
+                    rst.getDouble("UnitPrice"), rst.getInt("QtyOnHand"));
+            itemDtos.add(dto);
+        }
+        return itemDtos;
     }
 }
